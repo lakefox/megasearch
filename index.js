@@ -95,6 +95,27 @@ function megasearch() {
       }
     });
   }
+  this.raw = (query) => {
+    return new Promise(async function(resolve, reject) {
+      let stopwords = genStopwords(query);
+      let documentStore = [];
+      for (var i = 0; i < stopwords.length; i++) {
+        let sw = stopwords[i];
+        let file = await megaquery.api({q: sw});
+        if (file != `{"error": "value doesn't exist"}`) {
+          documentStore = documentStore.concat(file.split("\n"));
+        }
+      }
+      documentStore = [...new Set(documentStore)];
+      let documentOBJ = {};
+      for (var i = 0; i < documentStore.length; i++) {
+        let docId = documentStore[i];
+        let doc = await megaquery.api({q: docId});
+        documentOBJ[docId] = doc;
+      }
+      resolve(documentOBJ);
+    });
+  }
 }
 
 module.exports = megasearch;
